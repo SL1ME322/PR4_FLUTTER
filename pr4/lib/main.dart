@@ -1,3 +1,4 @@
+import 'dart:js';
 import 'dart:math';
 
 import 'package:pr4/elementProvider.dart';
@@ -15,27 +16,32 @@ void pushAndRemoveUntil(String text, BuildContext context) {
 }
 
 void main() {
-  ElementProvider elem = ElementProvider();
   runApp(
-    ChangeNotifierProvider.value(
-      value: elem,
-      child: MaterialApp(
-        onGenerateRoute: (settings) {
-          if (settings.name == "/pushAndRemoveUntil") {
-            return MaterialPageRoute(
-                builder: (context) =>
-                    Page(text: 'Использование pushAndRemoveUntil'));
-          }
-          if (settings.name == "/pushReplace ") {
-            return MaterialPageRoute(
-                builder: (context) => Page(text: 'Использование pushReplace '));
-          } else if (settings.name == '/toMain') {
-            return MaterialPageRoute(builder: (context) => MainApp());
-          }
-        },
-        title: "PR4",
-        home: MainApp(),
-      ),
+    MaterialApp(
+      onGenerateRoute: (settings) {
+        if (settings.name == "/pushAndRemoveUntil") {
+          return MaterialPageRoute(
+            builder: (context) => ChangeNotifierProvider(
+              create: (context) => ElementProvider(),
+              child: Page(text: 'Использование pushAndRemoveUntil'),
+            ),
+          );
+        }
+        if (settings.name == "/pushReplace ") {
+
+          final app = settings.arguments as ElementProvider;
+          return MaterialPageRoute(
+            builder: (context) => ChangeNotifierProvider.value(
+              value: app,
+              child: Page(text: 'Использование pushReplace '),
+            ),
+          );
+        } else if (settings.name == '/toMain') {
+          return MaterialPageRoute(builder: (context) => MainApp());
+        }
+      },
+      title: "PR4",
+      home: MainApp(),
     ),
   );
 }
@@ -61,8 +67,7 @@ class _MainAppState extends State<MainApp> {
   final List<int> _items = List<int>.generate(50, (int index) => index);
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<ElementProvider>(context);
-
+    final provider = context.watch<ElementProvider>().deleteElement(0);
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
@@ -77,7 +82,7 @@ class _MainAppState extends State<MainApp> {
               ElevatedButton(
                   onPressed: () {
                     Navigator.pushNamedAndRemoveUntil(
-                        context, '/pushAndRemoveUntil', (route) => false);
+                        context, '/pushAndRemoveUntil', (route) => false,arguments: context.read<ElementProvider>());
                   },
                   child: Text('Использование pushAndRemove')),
               ElevatedButton(
@@ -130,6 +135,7 @@ class Page extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.read<ElementProvider>().test;
     TextEditingController textEditingController =
         TextEditingController(text: text);
     return Scaffold(
